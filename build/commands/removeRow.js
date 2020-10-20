@@ -9,7 +9,9 @@ var _slate = require("slate");
 
 var _selection = require("../selection");
 
-var _splitCell = require("./splitCell");
+var _splitCell = _interopRequireDefault(require("./splitCell"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
@@ -86,7 +88,7 @@ var removeRow = function removeRow(table, editor) {
     focus: _slate.Editor.point(editor, bottomRight.originPath)
   });
 
-  (0, _splitCell.splitCell)(table, editor);
+  (0, _splitCell["default"])(table, editor);
 
   var _splitedTable2 = (0, _selection.splitedTable)(editor, table),
       splitedGridTable = _splitedTable2.gridTable;

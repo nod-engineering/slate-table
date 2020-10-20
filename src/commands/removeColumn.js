@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import { Editor, Transforms } from 'slate';
 import { splitedTable } from '../selection';
-import { splitCell } from './splitCell';
+import splitCell from './splitCell';
 
 const removeColumn = (table, editor) => {
   const { selection } = editor;

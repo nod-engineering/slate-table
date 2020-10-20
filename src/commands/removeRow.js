@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 import { Transforms, Editor } from 'slate';
 import { splitedTable } from '../selection';
-import { splitCell } from './splitCell';
+import splitCell from './splitCell';
 
 const removeRow = (table, editor) => {
   const { selection } = editor;

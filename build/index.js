@@ -9,7 +9,7 @@ Object.defineProperty(exports, "withTable", {
     return _withTable["default"];
   }
 });
-exports.commands = exports.helloWorld = void 0;
+exports.commands = void 0;
 
 var _insertTable = _interopRequireDefault(require("./commands/insertTable"));
 
@@ -33,11 +33,6 @@ var _withTable = _interopRequireDefault(require("./withTable"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var helloWorld = function helloWorld() {
-  return console.log('Hello World!');
-};
-
-exports.helloWorld = helloWorld;
 var commands = {
   insertTable: _insertTable["default"],
   insertBelow: _insertBelow["default"],
