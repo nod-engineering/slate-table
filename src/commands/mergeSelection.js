@@ -11,15 +11,26 @@ export function checkMerge(table, startCell, direction) {
   table.forEach(row => {
     startCellKeyIndexInTable = isMergeDown && startCellKeyIndexInTable !== -1 ? startCellKeyIndexInTable : row.findIndex(obj => obj.cell.key === startCellKey);
     if (direction === 'right') {
+      const colspan = selectedTable[0][0] && selectedTable[0][0].cell.colspan || 0;
       if (startCellKeyIndexInTable !== -1 && row.length > startCellKeyIndexInTable + 1) {
-        selectedTable[0].push(row[startCellKeyIndexInTable], row[startCellKeyIndexInTable + 1]);
+        let colspan = 0;
+        row.forEach((colRow, index) => {
+          colspan = selectedTable[0][0] && selectedTable[0][0].cell.colspan || 0;
+          if (index < startCellKeyIndexInTable) return;
+          if (selectedTable.length === 1 && selectedTable[0].length === 0) {
+            selectedTable[0].push(colRow);
+          } else if((colspan === 0 && selectedTable[0].length < 2) || selectedTable[0].length <= colspan) {
+            selectedTable[0].push(colRow);
+          }
+        })
       }
     }
     if (isMergeDown) {
       if (startCellKeyIndexInTable !== -1) {
+        const rowspan = selectedTable[0][0] && selectedTable[0][0].cell.rowspan || 0;
         if (selectedTable.length === 1 && selectedTable[0].length === 0) {
           selectedTable[0].push(row[startCellKeyIndexInTable]);
-        } else {
+        } else if((rowspan === 0 && selectedTable.length < 2) || selectedTable.length <= rowspan) {
           selectedTable.push([row[startCellKeyIndexInTable]]);
         }
       }
@@ -48,7 +59,7 @@ const mergeSelection = (table, editor, direction = 'right') => {
   const selectedTable = checkMerge(gridTable, startCell, direction);
   if (!selectedTable) return;
   const downIndex = selectedTable.length - 1;
-  const insertPositionCol = isMergeDown ? selectedTable[downIndex][0] : selectedTable[0][1];
+  const insertPositionCol = isMergeDown ? selectedTable[downIndex][0] : selectedTable[0][selectedTable[0].length -1];
   const tmpContent = {};
 
   gridTable.forEach((row) => {
