@@ -14,15 +14,27 @@ const checker = (table, editor, direction) => {
     const { key } = startNode[0];
     const { gridTable } = splitedTable(editor, table, key);
     const selectedTable = checkMerge(gridTable, startNode, direction);
-    const hasMergedCells = startNode[0].colspan > 1 || startNode[0].rowspan > 1;
-    if (hasMergedCells && direction) return false;
+    const startNodeColspan = startNode[0].colspan || 1;
+    const startNodeRowspan = startNode[0].rowspan || 1;
+    const hasMergedCells = startNodeColspan > 1 || startNodeRowspan > 1;
+    if (direction === 'down') {
+        const selectedTableLen = selectedTable.length;
+        if (selectedTableLen < 2 || startNodeRowspan === selectedTableLen ) return false;
+        const nextNodeColspan = selectedTable[selectedTableLen - 1][0].cell.colspan || undefined;
+        if (startNodeColspan === 1 && nextNodeColspan === undefined) return true;
+        if (startNodeColspan !== nextNodeColspan) return false;
+        return true;
+    }
+    if (direction === 'right') {
+        console.log('selected', selectedTable);
+        const selectedTableLen = selectedTable[0].length;
+        if (selectedTableLen < 2 || startNodeColspan === selectedTableLen ) return false;
+        const nextNodeRowspan = selectedTable[0][selectedTableLen - 1].cell.rowspan || undefined;
+        if (startNodeRowspan === 1 && nextNodeRowspan === undefined) return true;
+        if (startNodeRowspan !== nextNodeRowspan) return false;
+        return true;
+    }
     if (!direction && hasMergedCells) {
-        return true;
-    }
-    if (direction === 'right' && selectedTable.length === 1 && selectedTable[0].length) {
-        return true;
-    }
-    if (direction === 'down' && selectedTable.length > 1) {
         return true;
     }
     return false;
