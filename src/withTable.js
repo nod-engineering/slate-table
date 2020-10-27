@@ -59,97 +59,9 @@ const maybePreserveSpace = (
 };
 
 const tablePlugin = (editor) => {
-  const { addMark, removeMark, deleteBackward, deleteFragment } = editor;
-
-  editor.addMark = (key, value) => {
-    if (editor.selection) {
-      const lastSelection = editor.selection;
-
-      const selectedCells = Editor.nodes(editor, {
-        match: n => n.selectedCell,
-        at: [],
-      });
-
-      let isTable = false;
-
-      for (const cell of selectedCells) {
-        if (!isTable) {
-          isTable = true;
-        }
-
-        const [content] = Editor.nodes(editor, {
-          match: n => n.type === 'table_content',
-          at: cell[1],
-        });
-
-        if (Editor.string(editor, content[1]) !== '') {
-          Transforms.setSelection(editor, Editor.range(editor, cell[1]));
-          addMark(key, value);
-        }
-      }
-
-      if (isTable) {
-        Transforms.select(editor, lastSelection);
-        return;
-      }
-    }
-
-    addMark(key, value);
-  };
-
-  editor.removeMark = key => {
-    if (editor.selection) {
-      const lastSelection = editor.selection;
-      const selectedCells = Editor.nodes(editor, {
-        match: n => n.selectedCell,
-        at: [],
-      });
-
-      let isTable = false;
-      for (const cell of selectedCells) {
-        if (!isTable) {
-          isTable = true;
-        }
-
-        const [content] = Editor.nodes(editor, {
-          match: n => n.type === 'table_content',
-          at: cell[1],
-        });
-
-        if (Editor.string(editor, content[1]) !== '') {
-          Transforms.setSelection(editor, Editor.range(editor, cell[1]));
-          removeMark(key);
-        }
-      }
-
-      if (isTable) {
-        Transforms.select(editor, lastSelection);
-        return;
-      }
-    }
-    removeMark(key);
-  };
+  const { deleteBackward, deleteFragment } = editor;
 
   editor.deleteFragment = (...args) => {
-    if (editor.selection && isInSameTable(editor)) {
-      const selectedCells = Editor.nodes(editor, {
-        match: n => n.selectedCell,
-      });
-
-      for (const cell of selectedCells) {
-        Transforms.setSelection(editor, Editor.range(editor, cell[1]));
-
-        const [content] = Editor.nodes(editor, {
-          match: n => n.type === 'table_content',
-        });
-
-        Transforms.insertNodes(editor, createContent(), { at: content[1] });
-        Transforms.removeNodes(editor, { at: Path.next(content[1]) });
-      }
-
-      return;
-    }
-
     Transforms.removeNodes(editor, {
       match: n => n.type === 'table',
     });
