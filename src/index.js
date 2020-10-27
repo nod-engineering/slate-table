@@ -7,6 +7,7 @@ import removeRow from './commands/removeRow';
 import mergeSelection from './commands/mergeSelection';
 import splitCell from './commands/splitCell';
 import checker from './commands/checker';
+import toggleHeader from './commands/toggleHeader';
 
 import withTable from './withTable';
 const commands = {
@@ -19,5 +20,6 @@ const commands = {
     mergeSelection,
     splitCell,
     checker,
+    toggleHeader,
 }
 export { commands, withTable }

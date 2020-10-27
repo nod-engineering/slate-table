@@ -29,6 +29,8 @@ var _splitCell = _interopRequireDefault(require("./commands/splitCell"));
 
 var _checker = _interopRequireDefault(require("./commands/checker"));
 
+var _toggleHeader = _interopRequireDefault(require("./commands/toggleHeader"));
+
 var _withTable = _interopRequireDefault(require("./withTable"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -42,7 +44,8 @@ var commands = {
   removeRow: _removeRow["default"],
   mergeSelection: _mergeSelection["default"],
   splitCell: _splitCell["default"],
-  checker: _checker["default"]
+  checker: _checker["default"],
+  toggleHeader: _toggleHeader["default"]
 };
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.checkTableIsExist = checkTableIsExist;
 exports.isTableElement = isTableElement;
 exports.isInSameTable = isInSameTable;
+exports.get = get;
 
 var _slate = require("slate");
 
@@ -75,4 +76,19 @@ function isInSameTable(editor) {
 
   return false;
 }
+
+function get(obj, path) {
+  var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+
+  var travel = function travel(regexp) {
+    return String.prototype.split.call(path, regexp).filter(Boolean).reduce(function (res, key) {
+      return res !== null && res !== undefined ? res[key] : res;
+    }, obj);
+  };
+
+  var result = travel(/[,[\]]+?/) || travel(/[,[\].]+?/);
+  return result === undefined || result === obj ? defaultValue : result;
+}
+
+;
 //# sourceMappingURL=utils.js.map

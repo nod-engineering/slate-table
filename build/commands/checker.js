@@ -45,18 +45,30 @@ var checker = function checker(table, editor, direction) {
       gridTable = _splitedTable.gridTable;
 
   var selectedTable = (0, _mergeSelection.checkMerge)(gridTable, startNode, direction);
-  var hasMergedCells = startNode[0].colspan > 1 || startNode[0].rowspan > 1;
-  if (hasMergedCells && direction) return false;
+  var startNodeColspan = startNode[0].colspan || 1;
+  var startNodeRowspan = startNode[0].rowspan || 1;
+  var hasMergedCells = startNodeColspan > 1 || startNodeRowspan > 1;
+
+  if (direction === 'down') {
+    var selectedTableLen = selectedTable.length;
+    if (selectedTableLen < 2 || startNodeRowspan === selectedTableLen) return false;
+    var nextNodeColspan = selectedTable[selectedTableLen - 1][0].cell.colspan || undefined;
+    if (startNodeColspan === 1 && nextNodeColspan === undefined) return true;
+    if (startNodeColspan !== nextNodeColspan) return false;
+    return true;
+  }
+
+  if (direction === 'right') {
+    console.log('selected', selectedTable);
+    var _selectedTableLen = selectedTable[0].length;
+    if (_selectedTableLen < 2 || startNodeColspan === _selectedTableLen) return false;
+    var nextNodeRowspan = selectedTable[0][_selectedTableLen - 1].cell.rowspan || undefined;
+    if (startNodeRowspan === 1 && nextNodeRowspan === undefined) return true;
+    if (startNodeRowspan !== nextNodeRowspan) return false;
+    return true;
+  }
 
   if (!direction && hasMergedCells) {
-    return true;
-  }
-
-  if (direction === 'right' && selectedTable.length === 1 && selectedTable[0].length) {
-    return true;
-  }
-
-  if (direction === 'down' && selectedTable.length > 1) {
     return true;
   }
 

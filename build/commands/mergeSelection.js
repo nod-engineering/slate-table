@@ -35,16 +35,30 @@ function checkMerge(table, startCell, direction) {
     });
 
     if (direction === 'right') {
+      var colspan = selectedTable[0][0] && selectedTable[0][0].cell.colspan || 0;
+
       if (startCellKeyIndexInTable !== -1 && row.length > startCellKeyIndexInTable + 1) {
-        selectedTable[0].push(row[startCellKeyIndexInTable], row[startCellKeyIndexInTable + 1]);
+        var _colspan = 0;
+        row.forEach(function (colRow, index) {
+          _colspan = selectedTable[0][0] && selectedTable[0][0].cell.colspan || 0;
+          if (index < startCellKeyIndexInTable) return;
+
+          if (selectedTable.length === 1 && selectedTable[0].length === 0) {
+            selectedTable[0].push(colRow);
+          } else if (_colspan === 0 && selectedTable[0].length < 2 || selectedTable[0].length <= _colspan) {
+            selectedTable[0].push(colRow);
+          }
+        });
       }
     }
 
     if (isMergeDown) {
       if (startCellKeyIndexInTable !== -1) {
+        var rowspan = selectedTable[0][0] && selectedTable[0][0].cell.rowspan || 0;
+
         if (selectedTable.length === 1 && selectedTable[0].length === 0) {
           selectedTable[0].push(row[startCellKeyIndexInTable]);
-        } else {
+        } else if (rowspan === 0 && selectedTable.length < 2 || selectedTable.length <= rowspan) {
           selectedTable.push([row[startCellKeyIndexInTable]]);
         }
       }
@@ -89,7 +103,7 @@ var mergeSelection = function mergeSelection(table, editor) {
   var selectedTable = checkMerge(gridTable, startCell, direction);
   if (!selectedTable) return;
   var downIndex = selectedTable.length - 1;
-  var insertPositionCol = isMergeDown ? selectedTable[downIndex][0] : selectedTable[0][1];
+  var insertPositionCol = isMergeDown ? selectedTable[downIndex][0] : selectedTable[0][selectedTable[0].length - 1];
   var tmpContent = {};
   gridTable.forEach(function (row) {
     row.forEach(function (col) {
