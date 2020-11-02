@@ -59,7 +59,6 @@ var checker = function checker(table, editor, direction) {
   }
 
   if (direction === 'right') {
-    console.log('selected', selectedTable);
     var _selectedTableLen = selectedTable[0].length;
     if (_selectedTableLen < 2 || startNodeColspan === _selectedTableLen) return false;
     var nextNodeRowspan = selectedTable[0][_selectedTableLen - 1].cell.rowspan || undefined;

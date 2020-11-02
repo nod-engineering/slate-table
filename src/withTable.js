@@ -1,7 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable react/prop-types */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-param-reassign */
 import { Editor, Transforms, Path, Range } from 'slate';
 import { createContent } from './creator';
 import { isInSameTable } from './utils';
@@ -62,16 +58,25 @@ const tablePlugin = (editor) => {
   const { deleteBackward, deleteFragment } = editor;
 
   editor.deleteFragment = (...args) => {
+    if (editor.selection && isInSameTable(editor)) {
+      const [content] = Editor.nodes(editor, {
+        match: n => n.type === 'paragraph',
+      });
+
+      Transforms.insertNodes(editor, createContent(), { at: content[1] });
+      Transforms.removeNodes(editor, { at: Path.next(content[1]) });
+
+      return;
+    }
+
     Transforms.removeNodes(editor, {
       match: n => n.type === 'table',
     });
 
     deleteFragment(...args);
   };
-
   editor.deleteBackward = (...args) => {
     const { selection } = editor;
-
     if (selection && Range.isCollapsed(selection)) {
       const isInTable = Editor.above(editor, {
         match: n => n.type === 'table',
@@ -82,7 +87,7 @@ const tablePlugin = (editor) => {
         const isStart = Editor.isStart(editor, start, selection);
 
         const currCell = Editor.above(editor, {
-          match: n => n.type === 'table_cell',
+          match: n => n.type === 'table-cell',
         });
 
         if (isStart && currCell && !Editor.string(editor, currCell[1])) {

@@ -10,7 +10,6 @@ var _slate = require("slate");
 var _creator = require("../creator");
 
 var insertTable = function insertTable(editor) {
-  console.log('test');
   if (!editor.selection) return;
 
   var node = _slate.Editor.above(editor, {

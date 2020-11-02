@@ -82,6 +82,26 @@ var tablePlugin = function tablePlugin(editor) {
       deleteFragment = editor.deleteFragment;
 
   editor.deleteFragment = function () {
+    if (editor.selection && (0, _utils.isInSameTable)(editor)) {
+      var _Editor$nodes = _slate.Editor.nodes(editor, {
+        match: function match(n) {
+          return n.type === 'paragraph';
+        }
+      }),
+          _Editor$nodes2 = _slicedToArray(_Editor$nodes, 1),
+          content = _Editor$nodes2[0];
+
+      _slate.Transforms.insertNodes(editor, (0, _creator.createContent)(), {
+        at: content[1]
+      });
+
+      _slate.Transforms.removeNodes(editor, {
+        at: _slate.Path.next(content[1])
+      });
+
+      return;
+    }
+
     _slate.Transforms.removeNodes(editor, {
       match: function match(n) {
         return n.type === 'table';
@@ -108,7 +128,7 @@ var tablePlugin = function tablePlugin(editor) {
 
         var currCell = _slate.Editor.above(editor, {
           match: function match(n) {
-            return n.type === 'table_cell';
+            return n.type === 'table-cell';
           }
         });
 

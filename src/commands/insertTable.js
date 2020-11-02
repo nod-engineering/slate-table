@@ -2,7 +2,6 @@ import { Transforms, Editor, Range } from 'slate';
 import { createTable } from '../creator';
 
 const insertTable = (editor) => {
-  console.log('test')
   if (!editor.selection) return;
 
   const node = Editor.above(editor, {

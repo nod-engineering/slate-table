@@ -26,7 +26,6 @@ const checker = (table, editor, direction) => {
         return true;
     }
     if (direction === 'right') {
-        console.log('selected', selectedTable);
         const selectedTableLen = selectedTable[0].length;
         if (selectedTableLen < 2 || startNodeColspan === selectedTableLen ) return false;
         const nextNodeRowspan = selectedTable[0][selectedTableLen - 1].cell.rowspan || undefined;
