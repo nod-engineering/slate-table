@@ -79,7 +79,12 @@ var maybePreserveSpace = function maybePreserveSpace(editor, entry) {
 
 var tablePlugin = function tablePlugin(editor) {
   var deleteBackward = editor.deleteBackward,
-      deleteFragment = editor.deleteFragment;
+      deleteFragment = editor.deleteFragment,
+      deleteForward = editor.deleteForward;
+
+  var matchCells = function matchCells(node) {
+    return node.type === 'table_cell';
+  };
 
   editor.deleteFragment = function () {
     if (editor.selection && (0, _utils.isInSameTable)(editor)) {
@@ -141,6 +146,52 @@ var tablePlugin = function tablePlugin(editor) {
     deleteBackward.apply(void 0, arguments);
   };
 
+  var preventDeleteCell = function preventDeleteCell(operation, pointCallback, nextPoint) {
+    return function (unit) {
+      var selection = editor.selection;
+
+      if (_slate.Range.isCollapsed(selection)) {
+        var _Editor$nodes3 = _slate.Editor.nodes(editor, {
+          match: matchCells
+        }),
+            _Editor$nodes4 = _slicedToArray(_Editor$nodes3, 1),
+            cell = _Editor$nodes4[0];
+
+        if (cell) {
+          // Prevent deletions within a cell
+          var _cell = _slicedToArray(cell, 2),
+              cellPath = _cell[1];
+
+          var start = pointCallback(editor, cellPath);
+
+          if (selection && _slate.Point.equals(selection.anchor, start)) {
+            return;
+          }
+        } else {
+          // Prevent deleting cell when selection is before or after a table
+          var next = nextPoint(editor, selection, {
+            unit: unit
+          });
+
+          var _Editor$nodes5 = _slate.Editor.nodes(editor, {
+            match: matchCells,
+            at: next
+          }),
+              _Editor$nodes6 = _slicedToArray(_Editor$nodes5, 1),
+              nextCell = _Editor$nodes6[0];
+
+          if (nextCell) return;
+        }
+      }
+
+      operation(unit);
+    };
+  }; // prevent deleting cells with deleteBackward
+
+
+  editor.deleteBackward = preventDeleteCell(deleteBackward, _slate.Editor.start, _slate.Editor.before); // prevent deleting cells with deleteForward
+
+  editor.deleteForward = preventDeleteCell(deleteForward, _slate.Editor.end, _slate.Editor.after);
   return editor;
 };
 

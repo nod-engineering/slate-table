@@ -1,4 +1,4 @@
-import { Editor, Transforms, Path, Range } from 'slate';
+import { Editor, Transforms, Path, Range, Point } from 'slate';
 import { createContent } from './creator';
 import { isInSameTable } from './utils';
 
@@ -55,7 +55,8 @@ const maybePreserveSpace = (
 };
 
 const tablePlugin = (editor) => {
-  const { deleteBackward, deleteFragment } = editor;
+  const { deleteBackward, deleteFragment, deleteForward } = editor;
+  const matchCells = (node) => node.type === 'table_cell'
 
   editor.deleteFragment = (...args) => {
     if (editor.selection && isInSameTable(editor)) {
@@ -98,6 +99,54 @@ const tablePlugin = (editor) => {
 
     deleteBackward(...args);
   };
+
+  const preventDeleteCell = (
+    operation,
+    pointCallback,
+    nextPoint
+  ) => (unit) => {
+    const { selection } = editor;
+
+    if (Range.isCollapsed(selection)) {
+      const [cell] = Editor.nodes(editor, {
+        match: matchCells,
+      });
+      if (cell) {
+        // Prevent deletions within a cell
+        const [, cellPath] = cell;
+        const start = pointCallback(editor, cellPath);
+
+        if (selection && Point.equals(selection.anchor, start)) {
+          return;
+        }
+      } else {
+        // Prevent deleting cell when selection is before or after a table
+        const next = nextPoint(editor, selection, { unit });
+        const [nextCell] = Editor.nodes(editor, {
+          match: matchCells,
+          at: next,
+        });
+        if (nextCell) return;
+      }
+    }
+
+    operation(unit);
+  };
+
+
+   // prevent deleting cells with deleteBackward
+   editor.deleteBackward = preventDeleteCell(
+    deleteBackward,
+    Editor.start,
+    Editor.before
+  );
+
+  // prevent deleting cells with deleteForward
+  editor.deleteForward = preventDeleteCell(
+    deleteForward,
+    Editor.end,
+    Editor.after
+  );
 
   return editor;
 };
