@@ -1,6 +1,6 @@
-import { Editor, Transforms, Path, Range, Point } from 'slate';
 import { createContent } from './creator';
 import { isInSameTable } from './utils';
+import { Editor, Transforms, Path, Range, Point, Node } from "slate";
 
 const PreserveSpaceAfter = new Set(['table']);
 const PreserveSpaceBefore = new Set(['table']);
@@ -52,6 +52,20 @@ const maybePreserveSpace = (
   }
 
   return preserved;
+};
+
+const withText = (editor, entry) => {
+  const [node, path] = entry;
+  const { text } = node;
+  let result = false;
+  if (text !== undefined) {
+    const parent = Node.parent(editor, path);
+    if (parent && parent.type === "table_cell") {
+      Transforms.wrapNodes(editor, { type: "paragraph" }, { at: path });
+      result = true;
+    }
+  }
+  return result;
 };
 
 const tablePlugin = (editor) => {
@@ -157,6 +171,7 @@ const withTable = (editor) => {
 
   editor.normalizeNode = entry => {
     if (maybePreserveSpace(editor, entry)) return;
+    if (withText(editor, entry)) return;
 
     normalizeNode(entry);
   };

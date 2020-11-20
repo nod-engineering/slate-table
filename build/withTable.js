@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _slate = require("slate");
-
 var _creator = require("./creator");
 
 var _utils = require("./utils");
+
+var _slate = require("slate");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -75,6 +75,31 @@ var maybePreserveSpace = function maybePreserveSpace(editor, entry) {
   }
 
   return preserved;
+};
+
+var withText = function withText(editor, entry) {
+  var _entry2 = _slicedToArray(entry, 2),
+      node = _entry2[0],
+      path = _entry2[1];
+
+  var text = node.text;
+  var result = false;
+
+  if (text !== undefined) {
+    var parent = _slate.Node.parent(editor, path);
+
+    if (parent && parent.type === "table_cell") {
+      _slate.Transforms.wrapNodes(editor, {
+        type: "paragraph"
+      }, {
+        at: path
+      });
+
+      result = true;
+    }
+  }
+
+  return result;
 };
 
 var tablePlugin = function tablePlugin(editor) {
@@ -200,6 +225,7 @@ var withTable = function withTable(editor) {
 
   editor.normalizeNode = function (entry) {
     if (maybePreserveSpace(editor, entry)) return;
+    if (withText(editor, entry)) return;
     normalizeNode(entry);
   };
 
