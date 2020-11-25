@@ -122,7 +122,7 @@ var removeRow = function removeRow(table, editor) {
     }
   });
 
-  if (!_slate.Editor.string(editor, table[1])) {
+  if (gridTable.length === 1) {
     _slate.Transforms.removeNodes(editor, {
       at: table[1]
     });
