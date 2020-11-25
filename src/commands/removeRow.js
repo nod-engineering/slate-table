@@ -68,7 +68,7 @@ const removeRow = (table, editor) => {
     },
   });
 
-  if (!Editor.string(editor, table[1])) {
+  if (gridTable.length === 1) {
     Transforms.removeNodes(editor, {
       at: table[1],
     });
