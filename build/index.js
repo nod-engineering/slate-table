@@ -31,6 +31,8 @@ var _checker = _interopRequireDefault(require("./commands/checker"));
 
 var _toggleHeader = _interopRequireDefault(require("./commands/toggleHeader"));
 
+var _toggleParentRow = _interopRequireDefault(require("./commands/toggleParentRow"));
+
 var _withTable = _interopRequireDefault(require("./withTable"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -45,7 +47,8 @@ var commands = {
   mergeSelection: _mergeSelection["default"],
   splitCell: _splitCell["default"],
   checker: _checker["default"],
-  toggleHeader: _toggleHeader["default"]
+  toggleHeader: _toggleHeader["default"],
+  toggleParentRow: _toggleParentRow["default"]
 };
 exports.commands = commands;
 //# sourceMappingURL=index.js.map
