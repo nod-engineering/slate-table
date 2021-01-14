@@ -9,6 +9,7 @@ import splitCell from "./commands/splitCell";
 import checker from "./commands/checker";
 import toggleHeader from "./commands/toggleHeader";
 import toggleParentRow from "./commands/toggleParentRow";
+import { addSelection, removeSelection } from "./selection";
 
 import withTable from "./withTable";
 const commands = {
@@ -23,5 +24,7 @@ const commands = {
   checker,
   toggleHeader,
   toggleParentRow,
+  addSelection,
+  removeSelection,
 };
 export { commands, withTable };
