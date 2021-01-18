@@ -56,38 +56,20 @@ var toggleParentRow = function toggleParentRow(_ref2) {
   var table = _ref2.table,
       editor = _ref2.editor,
       selected = _ref2.selected,
-      row = _ref2.row,
+      rows = _ref2.rows,
       type = _ref2.type;
   var selection = editor.selection;
   if (!table || !selection) return;
-
-  var nodes = _slate.Editor.nodes(editor, {
-    at: table[1],
-    match: function match(n) {
-      return n.type === "table_row";
-    }
-  });
-
   var isParent = type === "parent";
 
-  var _iterator = _createForOfIteratorHelper(nodes),
-      _step;
+  if (rows && rows.length) {
+    var _iterator = _createForOfIteratorHelper(rows),
+        _step;
 
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var node = _step.value;
-
-      var _node = _slicedToArray(node, 2),
-          rows = _node[0],
-          path = _node[1];
-
-      if (!(0, _utils.get)(rows, "children", []).length) return;
-      var isHighlightedRow = rows.children.every(function (_ref3) {
-        var selectedCell = _ref3.selectedCell;
-        return selectedCell;
-      });
-
-      if (isHighlightedRow) {
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var row = _step.value;
+        var path = ReactEditor.findPath(editor, row);
         transformNode({
           editor: editor,
           path: path,
@@ -95,23 +77,50 @@ var toggleParentRow = function toggleParentRow(_ref2) {
           isParent: isParent
         });
       }
-
-      if (!isHighlightedRow && row) {
-        var _row = _slicedToArray(row, 2),
-            _path = _row[1];
-
-        transformNode({
-          editor: editor,
-          path: _path,
-          selected: selected,
-          isParent: isParent
-        });
-      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
+  } else {
+    var nodes = _slate.Editor.nodes(editor, {
+      at: table[1],
+      match: function match(n) {
+        return n.type === "table_row";
+      }
+    });
+
+    var _iterator2 = _createForOfIteratorHelper(nodes),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var node = _step2.value;
+
+        var _node = _slicedToArray(node, 2),
+            nodeRows = _node[0],
+            _path = _node[1];
+
+        if (!(0, _utils.get)(nodeRows, "children", []).length) return;
+        var isHighlightedRow = nodeRows.children.every(function (_ref3) {
+          var selectedCell = _ref3.selectedCell;
+          return selectedCell;
+        });
+
+        if (isHighlightedRow) {
+          transformNode({
+            editor: editor,
+            path: _path,
+            selected: selected,
+            isParent: isParent
+          });
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
   }
 };
 

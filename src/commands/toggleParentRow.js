@@ -11,26 +11,29 @@ const transformNode = ({ editor, path, selected, isParent }) => {
     Transforms.setNodes(editor, { subParent: selected }, { at: path });
   }
 };
-const toggleParentRow = ({ table, editor, selected, row, type }) => {
+const toggleParentRow = ({ table, editor, selected, rows, type }) => {
   const { selection } = editor;
   if (!table || !selection) return;
-  const nodes = Editor.nodes(editor, {
-    at: table[1],
-    match: (n) => n.type === "table_row",
-  });
   const isParent = type === "parent";
-  for (const node of nodes) {
-    const [rows, path] = node;
-    if (!get(rows, "children", []).length) return;
-    const isHighlightedRow = rows.children.every(
-      ({ selectedCell }) => selectedCell
-    );
-    if (isHighlightedRow) {
+  if (rows && rows.length) {
+    for (const row of rows) {
+      const path = ReactEditor.findPath(editor, row);
       transformNode({ editor, path, selected, isParent });
     }
-    if (!isHighlightedRow && row) {
-      const [, path] = row;
-      transformNode({ editor, path, selected, isParent });
+  } else {
+    const nodes = Editor.nodes(editor, {
+      at: table[1],
+      match: (n) => n.type === "table_row",
+    });
+    for (const node of nodes) {
+      const [nodeRows, path] = node;
+      if (!get(nodeRows, "children", []).length) return;
+      const isHighlightedRow = nodeRows.children.every(
+        ({ selectedCell }) => selectedCell
+      );
+      if (isHighlightedRow) {
+        transformNode({ editor, path, selected, isParent });
+      }
     }
   }
 };
