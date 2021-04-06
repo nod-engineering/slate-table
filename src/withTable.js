@@ -1,15 +1,11 @@
 import { createContent } from './creator';
 import { isInSameTable } from './utils';
-import { Editor, Transforms, Path, Range, Point, Node } from "slate";
+import { Editor, Transforms, Path, Range, Point, Node } from 'slate';
 
 const PreserveSpaceAfter = new Set(['table']);
 const PreserveSpaceBefore = new Set(['table']);
 
-const insertParagraph = (
-  editor,
-  at,
-  text = '',
-) => {
+const insertParagraph = (editor, at, text = '') => {
   Transforms.insertNodes(
     editor,
     {
@@ -22,10 +18,7 @@ const insertParagraph = (
   );
 };
 
-const maybePreserveSpace = (
-  editor,
-  entry,
-) => {
+const maybePreserveSpace = (editor, entry) => {
   const [node, path] = entry;
   const { type } = node;
   let preserved = false;
@@ -60,17 +53,57 @@ const withText = (editor, entry) => {
   let result = false;
   if (text !== undefined) {
     const parent = Node.parent(editor, path);
-    if (parent && parent.type === "table_cell") {
-      Transforms.wrapNodes(editor, { type: "paragraph" }, { at: path });
+    if (parent && parent.type === 'table_cell') {
+      Transforms.wrapNodes(editor, { type: 'paragraph' }, { at: path });
       result = true;
     }
   }
   return result;
 };
 
-const tablePlugin = (editor) => {
+const withEmptyChildren = (editor, entry) => {
+  try {
+    const [path] = entry;
+    const [, , , furthest] = Node.ancestors(editor, path, {
+      reverse: true,
+    });
+
+    if (
+      furthest &&
+      furthest[0].type === 'table' &&
+      (!furthest[0].children || !furthest[0].children.length)
+    ) {
+      const tableRowNode = {
+        type: 'table_row',
+        data: {},
+        children: [
+          {
+            type: 'table_cell',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    text: '',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      Transforms.insertNodes(editor, tableRowNode, { at: furthest[1] });
+      return;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const tablePlugin = editor => {
   const { deleteBackward, deleteFragment, deleteForward } = editor;
-  const matchCells = (node) => node.type === 'table_cell'
+  const matchCells = node => node.type === 'table_cell';
 
   editor.deleteFragment = (...args) => {
     if (editor.selection && isInSameTable(editor)) {
@@ -114,11 +147,7 @@ const tablePlugin = (editor) => {
     deleteBackward(...args);
   };
 
-  const preventDeleteCell = (
-    operation,
-    pointCallback,
-    nextPoint
-  ) => (unit) => {
+  const preventDeleteCell = (operation, pointCallback, nextPoint) => unit => {
     const { selection } = editor;
 
     if (Range.isCollapsed(selection)) {
@@ -147,31 +176,22 @@ const tablePlugin = (editor) => {
     operation(unit);
   };
 
-
-   // prevent deleting cells with deleteBackward
-   editor.deleteBackward = preventDeleteCell(
-    deleteBackward,
-    Editor.start,
-    Editor.before
-  );
+  // prevent deleting cells with deleteBackward
+  editor.deleteBackward = preventDeleteCell(deleteBackward, Editor.start, Editor.before);
 
   // prevent deleting cells with deleteForward
-  editor.deleteForward = preventDeleteCell(
-    deleteForward,
-    Editor.end,
-    Editor.after
-  );
+  editor.deleteForward = preventDeleteCell(deleteForward, Editor.end, Editor.after);
 
   return editor;
 };
 
-
-const withTable = (editor) => {
+const withTable = editor => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = entry => {
-    if (maybePreserveSpace(editor, entry)) return;
+    // if (maybePreserveSpace(editor, entry)) return;
     if (withText(editor, entry)) return;
+    withEmptyChildren(editor, entry);
 
     normalizeNode(entry);
   };
