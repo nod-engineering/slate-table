@@ -101,6 +101,63 @@ const withEmptyChildren = (editor, entry) => {
   }
 };
 
+// test idea
+const withTableRow = (editor, entry) => {
+  const [node, path] = entry;
+  if (!node) return;
+
+  if (node.type === 'table_row') {
+    const [first, second, third, furthest] = Node.ancestors(editor, path);
+    console.log({ first, second, third, furthest, node });
+
+    // check if parent type is table - if not wrap by { type: 'table'}
+    if (third[0].type !== 'table') {
+      Transforms.wrapNodes(editor, { type: 'table' });
+    }
+
+    // check if children structure is current - if not insert
+    if (!node.children || !node.children.length) {
+      Transforms.insertNodes(editor, {
+        type: 'table_cell',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                text: '',
+              },
+            ],
+          },
+        ],
+      });
+    }
+  }
+};
+
+// test idea
+const withTableCell = (editor, entry) => {
+  const [node, path] = entry;
+  if (!node) return;
+
+  if (node.type === 'table_cell') {
+    const [first, second, third, furthest] = Node.ancestors(editor, path);
+    console.log({ first, second, third, furthest, node });
+
+    // check if parent type is table_row - if not wrap by { type: 'table_row }
+    if (furthest[0].type !== 'table_row') {
+      Transforms.wrapNodes(editor, { type: 'table_row' });
+    }
+
+    // check if children structure is current - if not insert
+    if (!node.children || !node.children.length) {
+      Transforms.insertNodes(editor, {
+        type: 'paragraph',
+        children: [{ text: '' }],
+      });
+    }
+  }
+};
+
 const tablePlugin = editor => {
   const { deleteBackward, deleteFragment, deleteForward } = editor;
   const matchCells = node => node.type === 'table_cell';
@@ -124,7 +181,9 @@ const tablePlugin = editor => {
     deleteFragment(...args);
   };
   editor.deleteBackward = (...args) => {
-    const { selection } = editor;
+    const selection = editor && editor.selection;
+    if (selection) return;
+
     if (selection && Range.isCollapsed(selection)) {
       const isInTable = Editor.above(editor, {
         match: n => n.type === 'table',
@@ -148,7 +207,8 @@ const tablePlugin = editor => {
   };
 
   const preventDeleteCell = (operation, pointCallback, nextPoint) => unit => {
-    const { selection } = editor;
+    const selection = editor && editor.selection;
+    if (!selection) return;
 
     if (Range.isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
@@ -191,7 +251,10 @@ const withTable = editor => {
   editor.normalizeNode = entry => {
     // if (maybePreserveSpace(editor, entry)) return;
     if (withText(editor, entry)) return;
+
     withEmptyChildren(editor, entry);
+    // withTableRow(editor, entry);
+    // withTableCell(editor, entry);
 
     normalizeNode(entry);
   };

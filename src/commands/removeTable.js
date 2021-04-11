@@ -1,35 +1,32 @@
 import { Transforms, Path, Node } from 'slate';
+import { previousNodeExists } from '../utils';
 
 const removeTable = (table, editor) => {
-  if (editor && table) {
-    const path = table[1];
+  if (!editor || !table) return;
 
-    try {
-      Path.previous(table[1]);
-    } catch (err) {
-      if (err.message.includes('negative index')) {
-        Transforms.insertNodes(
-          editor,
-          { type: 'paragraph', children: [{ text: ' ' }] },
-          { at: [0, 0] },
-        );
+  const path = table[1];
 
-        const nextPath = Path.next(path);
-        const nextNode = Node.get(editor, nextPath);
+  if (!previousNodeExists(path)) {
+    Transforms.insertNodes(
+      editor,
+      { type: 'paragraph', children: [{ text: ' ' }] },
+      { at: [0, 0] },
+    );
 
-        if (nextNode && nextNode.type === 'table') {
-          Transforms.removeNodes(editor, { at: nextPath });
-        }
+    const nextPath = Path.next(path);
+    const nextNode = Node.get(editor, nextPath);
 
-        return;
-      }
+    if (nextNode && nextNode.type === 'table') {
+      Transforms.removeNodes(editor, { at: nextPath });
     }
 
-    Transforms.removeNodes(editor, {
-      match: n => n.type === 'table',
-      at: table[1],
-    });
+    return;
   }
+
+  Transforms.removeNodes(editor, {
+    match: n => n.type === 'table',
+    at: path,
+  });
 };
 
 export default removeTable;
