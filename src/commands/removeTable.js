@@ -1,12 +1,12 @@
-import { Transforms, Path, Node } from 'slate';
-import { previousNodeExists } from '../utils';
+import { Transforms, Path, Node, Editor } from 'slate';
 
 const removeTable = (table, editor) => {
   if (!editor || !table) return;
 
   const path = table[1];
+  const previous = Editor.previous(editor, { at: path });
 
-  if (!previousNodeExists(path)) {
+  if (!previous) {
     Transforms.insertNodes(
       editor,
       { type: 'paragraph', children: [{ text: ' ' }] },

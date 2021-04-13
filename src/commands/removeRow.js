@@ -1,6 +1,5 @@
 /* eslint-disable no-debugger */
 import { Transforms, Editor, Path, Node } from 'slate';
-import { previousNodeExists } from '../utils';
 import { splitedTable } from '../selection';
 import splitCell from './splitCell';
 
@@ -9,8 +8,9 @@ const removeRow = (table, editor) => {
   if (!selection || !table) return;
 
   const path = table[1];
+  const previous = Editor.previous(editor, { at: path });
 
-  if (!previousNodeExists(path)) {
+  if (!previous) {
     try {
       if (table[0].children.length < 2) {
         Transforms.insertNodes(
