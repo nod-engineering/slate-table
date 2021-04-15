@@ -18,35 +18,6 @@ const insertParagraph = (editor, at, text = '') => {
   );
 };
 
-const maybePreserveSpace = (editor, entry) => {
-  const [node, path] = entry;
-  const { type } = node;
-  let preserved = false;
-
-  if (PreserveSpaceAfter.has(type)) {
-    const next = Editor.next(editor, { at: path });
-    if (!next || PreserveSpaceBefore.has(next[0].type)) {
-      insertParagraph(editor, Path.next(path));
-      preserved = true;
-    }
-  }
-
-  if (PreserveSpaceBefore.has(type)) {
-    if (path[path.length - 1] === 0) {
-      insertParagraph(editor, path);
-      preserved = true;
-    } else {
-      const prev = Editor.previous(editor, { at: path });
-      if (!prev || PreserveSpaceAfter.has(prev[0].type)) {
-        insertParagraph(editor, path);
-        preserved = true;
-      }
-    }
-  }
-
-  return preserved;
-};
-
 const withText = (editor, entry) => {
   const [node, path] = entry;
   const { text } = node;
@@ -152,7 +123,6 @@ const withTable = editor => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = entry => {
-    // if (maybePreserveSpace(editor, entry)) return;
     if (withText(editor, entry)) return;
 
     normalizeNode(entry);
