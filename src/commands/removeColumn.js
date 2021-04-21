@@ -1,11 +1,35 @@
 /* eslint-disable no-restricted-syntax */
-import { Editor, Transforms } from 'slate';
+import { Editor, Transforms, Path, Node } from 'slate';
 import { splitedTable } from '../selection';
 import splitCell from './splitCell';
 
 const removeColumn = (table, editor) => {
   const { selection } = editor;
   if (!selection || !table) return;
+
+  const path = table[1];
+  const previous = Editor.previous(editor, { at: path });
+
+  if (!previous) {
+    try {
+      if (table[0].children[0].children.length < 2) {
+        Transforms.insertNodes(
+          editor,
+          { type: 'paragraph', children: [{ text: ' ' }] },
+          { at: [0, 0] },
+        );
+
+        const nextPath = Path.next(path);
+        const nextNode = Node.get(editor, nextPath);
+
+        if (nextNode && nextNode.type === 'table') {
+          Transforms.removeNodes(editor, { at: nextPath });
+        }
+
+        return;
+      }
+    } catch {}
+  }
 
   const { gridTable, getCol } = splitedTable(editor, table);
   const xIndex = table[1].length + 1;
@@ -21,8 +45,8 @@ const removeColumn = (table, editor) => {
     at: end,
   });
 
-  const [startCol] = getCol((col) => col.cell.key === startNode[0].key);
-  const [endCol] = getCol((col) => col.cell.key === endNode[0].key);
+  const [startCol] = getCol(col => col.cell.key === startNode[0].key);
+  const [endCol] = getCol(col => col.cell.key === endNode[0].key);
 
   const xLeft = startCol.path[xIndex];
   const xRight = endCol.path[xIndex];
@@ -44,7 +68,7 @@ const removeColumn = (table, editor) => {
     return [...p, ...cells];
   }, []);
 
-  removedCells.forEach((cell) => {
+  removedCells.forEach(cell => {
     Transforms.removeNodes(editor, {
       at: table[1],
       match: n => n.key === cell.cell.key,
@@ -58,10 +82,7 @@ const removeColumn = (table, editor) => {
         return false;
       }
 
-      if (
-        !n.children ||
-        n.children.findIndex((cell) => cell.type === 'table_cell') < 0
-      ) {
+      if (!n.children || n.children.findIndex(cell => cell.type === 'table_cell') < 0) {
         return true;
       }
 
@@ -76,7 +97,7 @@ const removeColumn = (table, editor) => {
 
   for (const row of rows) {
     let minRowHeight = Infinity;
-    row[0].children.forEach((cell) => {
+    row[0].children.forEach(cell => {
       const { rowspan = 1 } = cell;
       if (rowspan < minRowHeight) {
         minRowHeight = rowspan;
@@ -84,7 +105,7 @@ const removeColumn = (table, editor) => {
     });
 
     if (minRowHeight > 1 && minRowHeight < Infinity) {
-      row[0].children.forEach((cell) => {
+      row[0].children.forEach(cell => {
         Transforms.setNodes(
           editor,
           {
@@ -144,6 +165,6 @@ const removeColumn = (table, editor) => {
       }
     }
   }
-}
+};
 
 export default removeColumn;

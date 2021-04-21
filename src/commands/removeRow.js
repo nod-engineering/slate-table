@@ -1,11 +1,35 @@
 /* eslint-disable no-debugger */
-import { Transforms, Editor } from 'slate';
+import { Transforms, Editor, Path, Node } from 'slate';
 import { splitedTable } from '../selection';
 import splitCell from './splitCell';
 
 const removeRow = (table, editor) => {
   const { selection } = editor;
   if (!selection || !table) return;
+
+  const path = table[1];
+  const previous = Editor.previous(editor, { at: path });
+
+  if (!previous) {
+    try {
+      if (table[0].children.length < 2) {
+        Transforms.insertNodes(
+          editor,
+          { type: 'paragraph', children: [{ text: ' ' }] },
+          { at: [0, 0] },
+        );
+
+        const nextPath = Path.next(path);
+        const nextNode = Node.get(editor, nextPath);
+
+        if (nextNode && nextNode.type === 'table') {
+          Transforms.removeNodes(editor, { at: nextPath });
+        }
+
+        return;
+      }
+    } catch {}
+  }
 
   const { gridTable, getCol } = splitedTable(editor, table);
   const yIndex = table[1].length;
@@ -21,8 +45,8 @@ const removeRow = (table, editor) => {
     at: end,
   });
 
-  const [startCol] = getCol((col) => col.cell.key === startNode[0].key);
-  const [endCol] = getCol((col) => col.cell.key === endNode[0].key);
+  const [startCol] = getCol(col => col.cell.key === startNode[0].key);
+  const [endCol] = getCol(col => col.cell.key === endNode[0].key);
 
   const yTop = startCol.path[yIndex];
   const yBottom = endCol.path[yIndex];
@@ -39,11 +63,9 @@ const removeRow = (table, editor) => {
 
   const { gridTable: splitedGridTable } = splitedTable(editor, table);
 
-  const removeCols = splitedGridTable
-    .slice(yTop, yBottom + 1)
-    .reduce((p, c) => [...p, ...c], []);
+  const removeCols = splitedGridTable.slice(yTop, yBottom + 1).reduce((p, c) => [...p, ...c], []);
 
-  removeCols.forEach((col) => {
+  removeCols.forEach(col => {
     Transforms.removeNodes(editor, {
       at: table[1],
       match: n => n.key === col.cell.key,
@@ -57,10 +79,7 @@ const removeRow = (table, editor) => {
         return false;
       }
 
-      if (
-        !n.children ||
-        n.children.findIndex((cell) => cell.type === 'table_cell') < 0
-      ) {
+      if (!n.children || n.children.findIndex(cell => cell.type === 'table_cell') < 0) {
         return true;
       }
 
@@ -73,6 +92,6 @@ const removeRow = (table, editor) => {
       at: table[1],
     });
   }
-}
+};
 
 export default removeRow;
