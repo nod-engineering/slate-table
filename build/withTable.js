@@ -39,48 +39,10 @@ var insertParagraph = function insertParagraph(editor, at) {
   });
 };
 
-var maybePreserveSpace = function maybePreserveSpace(editor, entry) {
+var withText = function withText(editor, entry) {
   var _entry = _slicedToArray(entry, 2),
       node = _entry[0],
       path = _entry[1];
-
-  var type = node.type;
-  var preserved = false;
-
-  if (PreserveSpaceAfter.has(type)) {
-    var next = _slate.Editor.next(editor, {
-      at: path
-    });
-
-    if (!next || PreserveSpaceBefore.has(next[0].type)) {
-      insertParagraph(editor, _slate.Path.next(path));
-      preserved = true;
-    }
-  }
-
-  if (PreserveSpaceBefore.has(type)) {
-    if (path[path.length - 1] === 0) {
-      insertParagraph(editor, path);
-      preserved = true;
-    } else {
-      var prev = _slate.Editor.previous(editor, {
-        at: path
-      });
-
-      if (!prev || PreserveSpaceAfter.has(prev[0].type)) {
-        insertParagraph(editor, path);
-        preserved = true;
-      }
-    }
-  }
-
-  return preserved;
-};
-
-var withText = function withText(editor, entry) {
-  var _entry2 = _slicedToArray(entry, 2),
-      node = _entry2[0],
-      path = _entry2[1];
 
   var text = node.text;
   var result = false;
@@ -88,9 +50,9 @@ var withText = function withText(editor, entry) {
   if (text !== undefined) {
     var parent = _slate.Node.parent(editor, path);
 
-    if (parent && parent.type === "table_cell") {
+    if (parent && parent.type === 'table_cell') {
       _slate.Transforms.wrapNodes(editor, {
-        type: "paragraph"
+        type: 'paragraph'
       }, {
         at: path
       });
@@ -142,7 +104,8 @@ var tablePlugin = function tablePlugin(editor) {
   };
 
   editor.deleteBackward = function () {
-    var selection = editor.selection;
+    var selection = editor && editor.selection;
+    if (selection) return;
 
     if (selection && _slate.Range.isCollapsed(selection)) {
       var isInTable = _slate.Editor.above(editor, {
@@ -173,7 +136,8 @@ var tablePlugin = function tablePlugin(editor) {
 
   var preventDeleteCell = function preventDeleteCell(operation, pointCallback, nextPoint) {
     return function (unit) {
-      var selection = editor.selection;
+      var selection = editor && editor.selection;
+      if (!selection) return;
 
       if (_slate.Range.isCollapsed(selection)) {
         var _Editor$nodes3 = _slate.Editor.nodes(editor, {
@@ -224,7 +188,6 @@ var withTable = function withTable(editor) {
   var normalizeNode = editor.normalizeNode;
 
   editor.normalizeNode = function (entry) {
-    if (maybePreserveSpace(editor, entry)) return;
     if (withText(editor, entry)) return;
     normalizeNode(entry);
   };
