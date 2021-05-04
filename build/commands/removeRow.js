@@ -36,6 +36,38 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var removeRow = function removeRow(table, editor) {
   var selection = editor.selection;
   if (!selection || !table) return;
+  var path = table[1];
+
+  var previous = _slate.Editor.previous(editor, {
+    at: path
+  });
+
+  if (!previous) {
+    try {
+      if (table[0].children.length < 2) {
+        _slate.Transforms.insertNodes(editor, {
+          type: 'paragraph',
+          children: [{
+            text: ' '
+          }]
+        }, {
+          at: [0, 0]
+        });
+
+        var nextPath = _slate.Path.next(path);
+
+        var nextNode = _slate.Node.get(editor, nextPath);
+
+        if (nextNode && nextNode.type === 'table') {
+          _slate.Transforms.removeNodes(editor, {
+            at: nextPath
+          });
+        }
+
+        return;
+      }
+    } catch (_unused) {}
+  }
 
   var _splitedTable = (0, _selection.splitedTable)(editor, table),
       gridTable = _splitedTable.gridTable,
