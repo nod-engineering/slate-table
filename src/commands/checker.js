@@ -12,7 +12,6 @@ const checker = (table, editor, direction) => {
         match: n => n.type === 'table_cell',
         at: start,
         });
-                console.log('startNode', startNode);
         const { key } = startNode[0];
         const { gridTable } = splitedTable(editor, table, key);
         const selectedTable = checkMerge(gridTable, startNode, direction);
@@ -40,6 +39,7 @@ const checker = (table, editor, direction) => {
         }
         return false;
     } catch (error) {
+        console.log(error);
         return false;
     }
 
