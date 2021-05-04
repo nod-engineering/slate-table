@@ -39,7 +39,7 @@ const checker = (table, editor, direction) => {
         }
         return false;
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return false;
     }
 
