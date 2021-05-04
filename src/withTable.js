@@ -1,15 +1,11 @@
 import { createContent } from './creator';
 import { isInSameTable } from './utils';
-import { Editor, Transforms, Path, Range, Point, Node } from "slate";
+import { Editor, Transforms, Path, Range, Point, Node } from 'slate';
 
 const PreserveSpaceAfter = new Set(['table']);
 const PreserveSpaceBefore = new Set(['table']);
 
-const insertParagraph = (
-  editor,
-  at,
-  text = '',
-) => {
+const insertParagraph = (editor, at, text = '') => {
   Transforms.insertNodes(
     editor,
     {
@@ -22,55 +18,23 @@ const insertParagraph = (
   );
 };
 
-const maybePreserveSpace = (
-  editor,
-  entry,
-) => {
-  const [node, path] = entry;
-  const { type } = node;
-  let preserved = false;
-
-  if (PreserveSpaceAfter.has(type)) {
-    const next = Editor.next(editor, { at: path });
-    if (!next || PreserveSpaceBefore.has(next[0].type)) {
-      insertParagraph(editor, Path.next(path));
-      preserved = true;
-    }
-  }
-
-  if (PreserveSpaceBefore.has(type)) {
-    if (path[path.length - 1] === 0) {
-      insertParagraph(editor, path);
-      preserved = true;
-    } else {
-      const prev = Editor.previous(editor, { at: path });
-      if (!prev || PreserveSpaceAfter.has(prev[0].type)) {
-        insertParagraph(editor, path);
-        preserved = true;
-      }
-    }
-  }
-
-  return preserved;
-};
-
 const withText = (editor, entry) => {
   const [node, path] = entry;
   const { text } = node;
   let result = false;
   if (text !== undefined) {
     const parent = Node.parent(editor, path);
-    if (parent && parent.type === "table_cell") {
-      Transforms.wrapNodes(editor, { type: "paragraph" }, { at: path });
+    if (parent && parent.type === 'table_cell') {
+      Transforms.wrapNodes(editor, { type: 'paragraph' }, { at: path });
       result = true;
     }
   }
   return result;
 };
 
-const tablePlugin = (editor) => {
+const tablePlugin = editor => {
   const { deleteBackward, deleteFragment, deleteForward } = editor;
-  const matchCells = (node) => node.type === 'table_cell'
+  const matchCells = node => node.type === 'table_cell';
 
   editor.deleteFragment = (...args) => {
     if (editor.selection && isInSameTable(editor)) {
@@ -91,7 +55,9 @@ const tablePlugin = (editor) => {
     deleteFragment(...args);
   };
   editor.deleteBackward = (...args) => {
-    const { selection } = editor;
+    const selection = editor && editor.selection;
+    if (selection) return;
+
     if (selection && Range.isCollapsed(selection)) {
       const isInTable = Editor.above(editor, {
         match: n => n.type === 'table',
@@ -114,12 +80,9 @@ const tablePlugin = (editor) => {
     deleteBackward(...args);
   };
 
-  const preventDeleteCell = (
-    operation,
-    pointCallback,
-    nextPoint
-  ) => (unit) => {
-    const { selection } = editor;
+  const preventDeleteCell = (operation, pointCallback, nextPoint) => unit => {
+    const selection = editor && editor.selection;
+    if (!selection) return;
 
     if (Range.isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
@@ -147,30 +110,19 @@ const tablePlugin = (editor) => {
     operation(unit);
   };
 
-
-   // prevent deleting cells with deleteBackward
-   editor.deleteBackward = preventDeleteCell(
-    deleteBackward,
-    Editor.start,
-    Editor.before
-  );
+  // prevent deleting cells with deleteBackward
+  editor.deleteBackward = preventDeleteCell(deleteBackward, Editor.start, Editor.before);
 
   // prevent deleting cells with deleteForward
-  editor.deleteForward = preventDeleteCell(
-    deleteForward,
-    Editor.end,
-    Editor.after
-  );
+  editor.deleteForward = preventDeleteCell(deleteForward, Editor.end, Editor.after);
 
   return editor;
 };
 
-
-const withTable = (editor) => {
+const withTable = editor => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = entry => {
-    if (maybePreserveSpace(editor, entry)) return;
     if (withText(editor, entry)) return;
 
     normalizeNode(entry);
