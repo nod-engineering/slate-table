@@ -40,7 +40,6 @@ var checker = function checker(table, editor, direction) {
         _Editor$nodes2 = _slicedToArray(_Editor$nodes, 1),
         startNode = _Editor$nodes2[0];
 
-    console.log('startNode', startNode);
     var key = startNode[0].key;
 
     var _splitedTable = (0, _selection.splitedTable)(editor, table, key),
@@ -75,6 +74,7 @@ var checker = function checker(table, editor, direction) {
 
     return false;
   } catch (error) {
+    console.error(error);
     return false;
   }
 };

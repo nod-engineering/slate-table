@@ -1,5 +1,5 @@
-import { Transforms, Editor } from "slate";
-import { get } from "../utils";
+import { Transforms, Editor } from 'slate';
+import { get } from '../utils';
 
 const transformNode = ({ editor, path, selected, isParent }) => {
   if (isParent) {
@@ -14,23 +14,29 @@ const transformNode = ({ editor, path, selected, isParent }) => {
 const toggleParentRow = ({ table, editor, selected, rows, type }) => {
   const { selection } = editor;
   if (!table || !selection) return;
-  const isParent = type === "parent";
+  const isParent = type === 'parent';
   if (rows && rows.length) {
     for (const row of rows) {
-      const path = ReactEditor.findPath(editor, row);
-      transformNode({ editor, path, selected, isParent });
+      const nodes = Editor.nodes(editor, {
+        at: table[1],
+        match: n => n.type === 'table_row' && n.key === row.key,
+      });
+      for (const node of nodes) {
+        const [, path] = node;
+        if (path) {
+          transformNode({ editor, path, selected, isParent });
+        }
+      }
     }
   } else {
     const nodes = Editor.nodes(editor, {
       at: table[1],
-      match: (n) => n.type === "table_row",
+      match: n => n.type === 'table_row',
     });
     for (const node of nodes) {
       const [nodeRows, path] = node;
-      if (!get(nodeRows, "children", []).length) return;
-      const isHighlightedRow = nodeRows.children.every(
-        ({ selectedCell }) => selectedCell
-      );
+      if (!get(nodeRows, 'children', []).length) return;
+      const isHighlightedRow = nodeRows.children.every(({ selectedCell }) => selectedCell);
       if (isHighlightedRow) {
         transformNode({ editor, path, selected, isParent });
       }

@@ -60,22 +60,51 @@ var toggleParentRow = function toggleParentRow(_ref2) {
       type = _ref2.type;
   var selection = editor.selection;
   if (!table || !selection) return;
-  var isParent = type === "parent";
+  var isParent = type === 'parent';
 
   if (rows && rows.length) {
     var _iterator = _createForOfIteratorHelper(rows),
         _step;
 
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _loop = function _loop() {
         var row = _step.value;
-        var path = ReactEditor.findPath(editor, row);
-        transformNode({
-          editor: editor,
-          path: path,
-          selected: selected,
-          isParent: isParent
+
+        var nodes = _slate.Editor.nodes(editor, {
+          at: table[1],
+          match: function match(n) {
+            return n.type === 'table_row' && n.key === row.key;
+          }
         });
+
+        var _iterator2 = _createForOfIteratorHelper(nodes),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var node = _step2.value;
+
+            var _node = _slicedToArray(node, 2),
+                path = _node[1];
+
+            if (path) {
+              transformNode({
+                editor: editor,
+                path: path,
+                selected: selected,
+                isParent: isParent
+              });
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      };
+
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        _loop();
       }
     } catch (err) {
       _iterator.e(err);
@@ -86,22 +115,22 @@ var toggleParentRow = function toggleParentRow(_ref2) {
     var nodes = _slate.Editor.nodes(editor, {
       at: table[1],
       match: function match(n) {
-        return n.type === "table_row";
+        return n.type === 'table_row';
       }
     });
 
-    var _iterator2 = _createForOfIteratorHelper(nodes),
-        _step2;
+    var _iterator3 = _createForOfIteratorHelper(nodes),
+        _step3;
 
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var node = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var node = _step3.value;
 
-        var _node = _slicedToArray(node, 2),
-            nodeRows = _node[0],
-            _path = _node[1];
+        var _node2 = _slicedToArray(node, 2),
+            nodeRows = _node2[0],
+            path = _node2[1];
 
-        if (!(0, _utils.get)(nodeRows, "children", []).length) return;
+        if (!(0, _utils.get)(nodeRows, 'children', []).length) return;
         var isHighlightedRow = nodeRows.children.every(function (_ref3) {
           var selectedCell = _ref3.selectedCell;
           return selectedCell;
@@ -110,16 +139,16 @@ var toggleParentRow = function toggleParentRow(_ref2) {
         if (isHighlightedRow) {
           transformNode({
             editor: editor,
-            path: _path,
+            path: path,
             selected: selected,
             isParent: isParent
           });
         }
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
   }
 };
