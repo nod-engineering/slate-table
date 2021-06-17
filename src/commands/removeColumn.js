@@ -1,7 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-import { Editor, Transforms, Path, Node } from 'slate';
+import { Editor, Transforms, Path } from 'slate';
 import { splitedTable } from '../selection';
 import splitCell from './splitCell';
+import { getNode } from '../utils';
 
 const removeColumn = (table, editor) => {
   const { selection } = editor;
@@ -19,8 +20,8 @@ const removeColumn = (table, editor) => {
           { at: [0, 0] },
         );
 
-        const nextPath = Path.next(path);
-        const nextNode = Node.get(editor, nextPath);
+        const nextPath = path && path.length && Path.next(path);
+        const nextNode = nextPath && getNode(editor, nextPath);
 
         if (nextNode && nextNode.type === 'table') {
           Transforms.removeNodes(editor, { at: nextPath });

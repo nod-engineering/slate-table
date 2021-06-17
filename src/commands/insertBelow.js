@@ -14,20 +14,15 @@ const insertBelow = (table, editor) => {
     match: n => n.type === 'table_cell',
   });
 
-  const [insertPositionCol] = getCol(
-    (c) => c.cell.key === startCell[0].key && c.isReal,
-  );
+  const [insertPositionCol] = getCol(c => c.cell.key === startCell[0].key && c.isReal);
 
   let checkInsertEnable = true;
   const insertCols = new Map();
 
-  const y =
-    insertPositionCol.path[yIndex] + (insertPositionCol.cell.rowspan || 1) - 1;
+  const y = insertPositionCol.path[yIndex] + (insertPositionCol.cell.rowspan || 1) - 1;
 
-  gridTable[y].forEach((col) => {
-    const [originCol] = getCol(
-      (n) => n.isReal && n.cell.key === col.cell.key,
-    );
+  gridTable[y].forEach(col => {
+    const [originCol] = getCol(n => n.isReal && n.cell.key === col.cell.key);
 
     const { cell, path } = originCol;
 
@@ -58,9 +53,11 @@ const insertBelow = (table, editor) => {
     path[yIndex] += 1;
   }
 
-  Transforms.insertNodes(editor, newRow, {
-    at: Path.next(path),
-  });
-}
+  if (path && path.length) {
+    Transforms.insertNodes(editor, newRow, {
+      at: Path.next(path),
+    });
+  }
+};
 
 export default insertBelow;

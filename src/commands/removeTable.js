@@ -1,4 +1,5 @@
-import { Transforms, Path, Node, Editor } from 'slate';
+import { Transforms, Path, Editor } from 'slate';
+import { getNode } from '../utils';
 
 const removeTable = (table, editor) => {
   if (!editor || !table) return;
@@ -13,8 +14,8 @@ const removeTable = (table, editor) => {
       { at: [0, 0] },
     );
 
-    const nextPath = Path.next(path);
-    const nextNode = Node.get(editor, nextPath);
+    const nextPath = path && path.length && Path.next(path);
+    const nextNode = nextPath && getNode(editor, nextPath);
 
     if (nextNode && nextNode.type === 'table') {
       Transforms.removeNodes(editor, { at: nextPath });
