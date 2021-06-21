@@ -1,4 +1,4 @@
-import { Editor, Path } from 'slate';
+import { Editor, Path, Text } from 'slate';
 
 export function checkTableIsExist(editor, table) {
   const cells = Array.from(
