@@ -79,9 +79,11 @@ var insertRight = function insertRight(table, editor) {
       rowspan: col.cell.rowspan || 1
     });
 
-    _slate.Transforms.insertNodes(editor, newCell, {
-      at: _slate.Path.next(col.originPath)
-    });
+    if (col.originPath && col.originPath.length) {
+      _slate.Transforms.insertNodes(editor, newCell, {
+        at: _slate.Path.next(col.originPath)
+      });
+    }
   });
 };
 

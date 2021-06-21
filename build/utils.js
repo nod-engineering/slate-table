@@ -7,6 +7,7 @@ exports.checkTableIsExist = checkTableIsExist;
 exports.isTableElement = isTableElement;
 exports.isInSameTable = isInSameTable;
 exports.get = get;
+exports.getNode = void 0;
 
 var _slate = require("slate");
 
@@ -90,5 +91,21 @@ function get(obj, path) {
   return result === undefined || result === obj ? defaultValue : result;
 }
 
-;
+var getNode = function getNode(editor, path) {
+  var node = editor;
+
+  for (var i = 0; i < path.length; i += 1) {
+    var p = path[i];
+
+    if (_slate.Text.isText(node) || !node.children[p]) {
+      return undefined;
+    }
+
+    node = node.children[p];
+  }
+
+  return node;
+};
+
+exports.getNode = getNode;
 //# sourceMappingURL=utils.js.map

@@ -7,6 +7,8 @@ exports["default"] = void 0;
 
 var _slate = require("slate");
 
+var _utils = require("../utils");
+
 var removeTable = function removeTable(table, editor) {
   if (!editor || !table) return;
   var path = table[1];
@@ -25,9 +27,9 @@ var removeTable = function removeTable(table, editor) {
       at: [0, 0]
     });
 
-    var nextPath = _slate.Path.next(path);
+    var nextPath = path && path.length && _slate.Path.next(path);
 
-    var nextNode = _slate.Node.get(editor, nextPath);
+    var nextNode = nextPath && (0, _utils.getNode)(editor, nextPath);
 
     if (nextNode && nextNode.type === 'table') {
       _slate.Transforms.removeNodes(editor, {

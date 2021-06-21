@@ -99,9 +99,11 @@ var insertBelow = function insertBelow(table, editor) {
     path[yIndex] += 1;
   }
 
-  _slate.Transforms.insertNodes(editor, newRow, {
-    at: _slate.Path.next(path)
-  });
+  if (path && path.length) {
+    _slate.Transforms.insertNodes(editor, newRow, {
+      at: _slate.Path.next(path)
+    });
+  }
 };
 
 var _default = insertBelow;
