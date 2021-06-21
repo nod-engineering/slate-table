@@ -40,7 +40,8 @@ var checker = function checker(table, editor, direction) {
         _Editor$nodes2 = _slicedToArray(_Editor$nodes, 1),
         startNode = _Editor$nodes2[0];
 
-    var key = startNode[0].key;
+    var key = startNode && startNode[0] && startNode[0].key;
+    if (!key) return false;
 
     var _splitedTable = (0, _selection.splitedTable)(editor, table, key),
         gridTable = _splitedTable.gridTable;

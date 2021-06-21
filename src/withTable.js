@@ -43,7 +43,10 @@ const tablePlugin = editor => {
       });
 
       Transforms.insertNodes(editor, createContent(), { at: content[1] });
-      Transforms.removeNodes(editor, { at: Path.next(content[1]) });
+
+      if (content[1] && content[1].length) {
+        Transforms.removeNodes(editor, { at: Path.next(content[1]) });
+      }
 
       return;
     }
@@ -124,6 +127,12 @@ const withTable = editor => {
 
   editor.normalizeNode = entry => {
     if (withText(editor, entry)) return;
+
+    const [node, path] = entry;
+
+    if (node && node.type === 'table' && node.children.length === 1 && !node.children[0].key) {
+      Transforms.removeNodes(editor, { at: path });
+    }
 
     normalizeNode(entry);
   };

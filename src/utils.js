@@ -1,4 +1,4 @@
-import { Editor, Path } from 'slate';
+import { Editor, Path, Text } from 'slate';
 
 export function checkTableIsExist(editor, table) {
   const cells = Array.from(
@@ -13,10 +13,7 @@ export function checkTableIsExist(editor, table) {
 
 export function isTableElement(type) {
   return (
-    type === 'table' ||
-    type === 'table-row' ||
-    type === 'table-cell' ||
-    type === 'table-content'
+    type === 'table' || type === 'table-row' || type === 'table-cell' || type === 'table-content'
   );
 }
 
@@ -54,5 +51,20 @@ export function get(obj, path, defaultValue = undefined) {
       .reduce((res, key) => (res !== null && res !== undefined ? res[key] : res), obj);
   const result = travel(/[,[\]]+?/) || travel(/[,[\].]+?/);
   return result === undefined || result === obj ? defaultValue : result;
-};
+}
 
+export const getNode = (editor, path) => {
+  let node = editor;
+
+  for (let i = 0; i < path.length; i += 1) {
+    const p = path[i];
+
+    if (Text.isText(node) || !node.children[p]) {
+      return undefined;
+    }
+
+    node = node.children[p];
+  }
+
+  return node;
+};

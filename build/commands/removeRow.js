@@ -11,15 +11,9 @@ var _selection = require("../selection");
 
 var _splitCell = _interopRequireDefault(require("./splitCell"));
 
+var _utils = require("../utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -43,30 +37,28 @@ var removeRow = function removeRow(table, editor) {
   });
 
   if (!previous) {
-    try {
-      if (table[0].children.length < 2) {
-        _slate.Transforms.insertNodes(editor, {
-          type: 'paragraph',
-          children: [{
-            text: ' '
-          }]
-        }, {
-          at: [0, 0]
+    if (table[0].children.length < 2) {
+      _slate.Transforms.insertNodes(editor, {
+        type: 'paragraph',
+        children: [{
+          text: ''
+        }]
+      }, {
+        at: [0, 0]
+      });
+
+      var nextPath = path && path.length && _slate.Path.next(path);
+
+      var nextNode = nextPath && (0, _utils.getNode)(editor, nextPath);
+
+      if (nextNode && nextNode.type === 'table') {
+        _slate.Transforms.removeNodes(editor, {
+          at: nextPath
         });
-
-        var nextPath = _slate.Path.next(path);
-
-        var nextNode = _slate.Node.get(editor, nextPath);
-
-        if (nextNode && nextNode.type === 'table') {
-          _slate.Transforms.removeNodes(editor, {
-            at: nextPath
-          });
-        }
-
-        return;
       }
-    } catch (_unused) {}
+
+      return;
+    }
   }
 
   var _splitedTable = (0, _selection.splitedTable)(editor, table),
@@ -98,6 +90,8 @@ var removeRow = function removeRow(table, editor) {
       _Editor$nodes4 = _slicedToArray(_Editor$nodes3, 1),
       endNode = _Editor$nodes4[0];
 
+  if (!startNode || !endNode) return;
+
   var _getCol = getCol(function (col) {
     return col.cell.key === startNode[0].key;
   }),
@@ -121,44 +115,15 @@ var removeRow = function removeRow(table, editor) {
   });
 
   (0, _splitCell["default"])(table, editor);
-
-  var _splitedTable2 = (0, _selection.splitedTable)(editor, table),
-      splitedGridTable = _splitedTable2.gridTable;
-
-  var removeCols = splitedGridTable.slice(yTop, yBottom + 1).reduce(function (p, c) {
-    return [].concat(_toConsumableArray(p), _toConsumableArray(c));
-  }, []);
-  removeCols.forEach(function (col) {
+  var rowsToDelete = table[0].children.slice(yTop, yBottom + 1);
+  rowsToDelete.forEach(function (row) {
     _slate.Transforms.removeNodes(editor, {
       at: table[1],
       match: function match(n) {
-        return n.key === col.cell.key;
+        return n.key === row.key;
       }
     });
   });
-
-  _slate.Transforms.removeNodes(editor, {
-    at: table[1],
-    match: function match(n) {
-      if (n.type !== 'table_row') {
-        return false;
-      }
-
-      if (!n.children || n.children.findIndex(function (cell) {
-        return cell.type === 'table_cell';
-      }) < 0) {
-        return true;
-      }
-
-      return false;
-    }
-  });
-
-  if (gridTable.length === 1) {
-    _slate.Transforms.removeNodes(editor, {
-      at: table[1]
-    });
-  }
 };
 
 var _default = removeRow;

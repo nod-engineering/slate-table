@@ -87,9 +87,11 @@ var tablePlugin = function tablePlugin(editor) {
         at: content[1]
       });
 
-      _slate.Transforms.removeNodes(editor, {
-        at: _slate.Path.next(content[1])
-      });
+      if (content[1] && content[1].length) {
+        _slate.Transforms.removeNodes(editor, {
+          at: _slate.Path.next(content[1])
+        });
+      }
 
       return;
     }
@@ -189,6 +191,17 @@ var withTable = function withTable(editor) {
 
   editor.normalizeNode = function (entry) {
     if (withText(editor, entry)) return;
+
+    var _entry2 = _slicedToArray(entry, 2),
+        node = _entry2[0],
+        path = _entry2[1];
+
+    if (node && node.type === 'table' && node.children.length === 1 && !node.children[0].key) {
+      _slate.Transforms.removeNodes(editor, {
+        at: path
+      });
+    }
+
     normalizeNode(entry);
   };
 
