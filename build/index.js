@@ -52,7 +52,8 @@ var commands = {
   toggleHeader: _toggleHeader["default"],
   toggleParentRow: _toggleParentRow["default"],
   addSelection: _selection.addSelection,
-  removeSelection: _selection.removeSelection
+  removeSelection: _selection.removeSelection,
+  splitedTable: _selection.splitedTable
 };
 exports.commands = commands;
 //# sourceMappingURL=index.js.map
