@@ -83,6 +83,82 @@ export const splitedTable = (editor, table, startKey) => {
   };
 };
 
+export function getTableGrid(editor, table, startKey) {
+	const tableDepth = table[1].length;
+
+	const cells = [];
+
+	const nodes = Editor.nodes(editor, {
+		at: table[1],
+		match: n => n.type === 'table_cell',
+	});
+
+	for (const node of nodes) {
+		const [cell, path] = node;
+		cells.push({
+			cell,
+			path,
+			realPath: [...path],
+		});
+	}
+
+	const gridTable = [];
+	let insertPosition = null;
+
+	for (let i = 0; i < cells.length; i++) {
+		const { cell, path, realPath } = cells[i];
+		const { rowspan = 1, colspan = 1 } = cell;
+		const y = path[tableDepth];
+		let x = path[tableDepth + 1];
+
+		if (!gridTable[y]) {
+			gridTable[y] = [];
+		}
+
+		while (gridTable[y][x]) {
+			x++;
+		}
+
+		for (let j = 0; j < rowspan; j++) {
+			for (let k = 0; k < colspan; k++) {
+			const _y = y + j;
+			const _x = x + k;
+
+			if (!gridTable[_y]) {
+				gridTable[_y] = [];
+			}
+
+			gridTable[_y][_x] = {
+				cell,
+				path: [...realPath.slice(0, tableDepth), _y, _x],
+				isReal: (rowspan === 1 && colspan === 1) || (_y === y && _x === x),
+				originPath: path,
+			};
+
+			if (!insertPosition && cell.key === startKey) {
+				insertPosition = gridTable[_y][_x];
+				gridTable[_y][_x].isInsertPosition = true;
+			}
+			}
+		}
+	}
+	return gridTable;
+}
+
+export function getCol(gridTable, match) {
+	const result = [];
+
+	gridTable.forEach(row => {
+		row.forEach((col) => {
+			if (match && match(col)) {
+				result.push(col);
+			}
+		});
+	});
+
+	return result;
+}
+
 export function removeSelection(editor) {
   Transforms.unsetNodes(editor, 'selectedCell', {
     at: [],

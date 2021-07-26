@@ -1,6 +1,6 @@
 {
   "name": "slate-table",
-  "version": "0.0.26",
+  "version": "0.0.29",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "format:check": "prettier --list-different \"src/**/*.js\"",
     "lint": "eslint \"src/**/*.js\"",
     "lint:fix": "eslint --fix \"src/**/*.js\"",
-    "publish-to-git": "publish-to-git"
+    "prepublish": "npm run build",
+    "publish": "publish-to-git"
   },
   "author": "",
   "license": "ISC",

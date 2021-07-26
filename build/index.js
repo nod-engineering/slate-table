@@ -53,7 +53,7 @@ var commands = {
   toggleParentRow: _toggleParentRow["default"],
   addSelection: _selection.addSelection,
   removeSelection: _selection.removeSelection,
-  splitedTable: _selection.splitedTable
+  getTableGrid: _selection.getTableGrid
 };
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

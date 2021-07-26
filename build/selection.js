@@ -3,6 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getTableGrid = getTableGrid;
+exports.getCol = getCol;
 exports.removeSelection = removeSelection;
 exports.addSelection = addSelection;
 exports.splitedTable = void 0;
@@ -133,6 +135,103 @@ var splitedTable = function splitedTable(editor, table, startKey) {
 };
 
 exports.splitedTable = splitedTable;
+
+function getTableGrid(editor, table, startKey) {
+  var tableDepth = table[1].length;
+  var cells = [];
+
+  var nodes = _slate.Editor.nodes(editor, {
+    at: table[1],
+    match: function match(n) {
+      return n.type === 'table_cell';
+    }
+  });
+
+  var _iterator2 = _createForOfIteratorHelper(nodes),
+      _step2;
+
+  try {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var node = _step2.value;
+
+      var _node2 = _slicedToArray(node, 2),
+          _cell2 = _node2[0],
+          _path2 = _node2[1];
+
+      cells.push({
+        cell: _cell2,
+        path: _path2,
+        realPath: _toConsumableArray(_path2)
+      });
+    }
+  } catch (err) {
+    _iterator2.e(err);
+  } finally {
+    _iterator2.f();
+  }
+
+  var gridTable = [];
+  var insertPosition = null;
+
+  for (var i = 0; i < cells.length; i++) {
+    var _cells$i2 = cells[i],
+        cell = _cells$i2.cell,
+        path = _cells$i2.path,
+        realPath = _cells$i2.realPath;
+    var _cell$rowspan2 = cell.rowspan,
+        rowspan = _cell$rowspan2 === void 0 ? 1 : _cell$rowspan2,
+        _cell$colspan2 = cell.colspan,
+        colspan = _cell$colspan2 === void 0 ? 1 : _cell$colspan2;
+    var y = path[tableDepth];
+    var x = path[tableDepth + 1];
+
+    if (!gridTable[y]) {
+      gridTable[y] = [];
+    }
+
+    while (gridTable[y][x]) {
+      x++;
+    }
+
+    for (var j = 0; j < rowspan; j++) {
+      for (var k = 0; k < colspan; k++) {
+        var _y = y + j;
+
+        var _x = x + k;
+
+        if (!gridTable[_y]) {
+          gridTable[_y] = [];
+        }
+
+        gridTable[_y][_x] = {
+          cell: cell,
+          path: [].concat(_toConsumableArray(realPath.slice(0, tableDepth)), [_y, _x]),
+          isReal: rowspan === 1 && colspan === 1 || _y === y && _x === x,
+          originPath: path
+        };
+
+        if (!insertPosition && cell.key === startKey) {
+          insertPosition = gridTable[_y][_x];
+          gridTable[_y][_x].isInsertPosition = true;
+        }
+      }
+    }
+  }
+
+  return gridTable;
+}
+
+function getCol(gridTable, match) {
+  var result = [];
+  gridTable.forEach(function (row) {
+    row.forEach(function (col) {
+      if (match && match(col)) {
+        result.push(col);
+      }
+    });
+  });
+  return result;
+}
 
 function removeSelection(editor) {
   _slate.Transforms.unsetNodes(editor, 'selectedCell', {
